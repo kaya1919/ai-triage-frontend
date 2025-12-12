@@ -1,7 +1,7 @@
 // src/components/Admin/CreateShowForm.tsx
 import { useState, useContext } from "react";
 import ErrorBox from "../common/ErrorBox";
-import { createShow } from "../../api/api";
+import { createDoctor } from "../../api/api";
 import { ShowsContext } from "../../context/ShowsContext";
 
 export default function CreateShowForm() {
@@ -12,6 +12,7 @@ export default function CreateShowForm() {
   const [specialty, setSpecialty] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,41 +24,57 @@ export default function CreateShowForm() {
       return;
     }
 
+    setLoading(true);
     try {
-      await createShow({ name, specialty });
+      await createDoctor({ name, specialty });
 
-      setSuccess("Show created successfully!");
+      setSuccess("Doctor created successfully!");
       setName("");
       setSpecialty("");
 
       if (refreshShows) {
-        await refreshShows();  // 🔥 IMPORTANT
+        await refreshShows(); // refresh context data
       }
-
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Failed to create show");
+      const msg = err?.response?.data?.error || err?.message || "Failed to create doctor";
+      setError(String(msg));
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      {error && <ErrorBox message={error} />}
-      {success && <div style={{ color: "green" }}>{success}</div>}
+    <form onSubmit={handleSubmit} style={{ maxWidth: 560, marginBottom: 20 }}>
+      <ErrorBox message={error} />
+
+      {success && <div style={{ color: "green", marginBottom: 8 }}>{success}</div>}
+
+      <div style={{ marginBottom: 10 }}>
+        <label style={{ display: "block", fontWeight: 600 }}>Name</label>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Doctor / Show name"
+          style={{ width: "100%", padding: 8, borderRadius: 6 }}
+        />
+      </div>
+
+      <div style={{ marginBottom: 10 }}>
+        <label style={{ display: "block", fontWeight: 600 }}>Specialty</label>
+        <input
+          value={specialty}
+          onChange={(e) => setSpecialty(e.target.value)}
+          placeholder="Specialty (e.g., Cardiology)"
+          style={{ width: "100%", padding: 8, borderRadius: 6 }}
+        />
+      </div>
 
       <div>
-        <label>Name:</label><br />
-        <input value={name} onChange={(e) => setName(e.target.value)} />
+        <button type="submit" disabled={loading} style={{ padding: "8px 14px", borderRadius: 6 }}>
+          {loading ? "Creating..." : "Create"}
+        </button>
       </div>
-
-      <div style={{ marginTop: 10 }}>
-        <label>Specialty:</label><br />
-        <input value={specialty} onChange={(e) => setSpecialty(e.target.value)} />
-      </div>
-
-      <button type="submit" style={{ marginTop: 10 }}>
-        Create
-      </button>
     </form>
   );
 }

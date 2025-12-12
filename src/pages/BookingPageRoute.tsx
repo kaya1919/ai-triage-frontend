@@ -1,6 +1,7 @@
 // src/pages/BookingPageRoute.tsx
 import { useCallback, useEffect, useMemo, useState, useContext } from "react";
-import { useParams } from "react-router-dom";import SeatGrid from "../components/User/SeatGrid";
+import { useParams } from "react-router-dom";
+import SeatGrid from "../components/User/SeatGrid";
 import type { Seat } from "../components/User/SeatGrid";
 import ConfirmModal from "../components/common/ConfirmModal";
 import { fetchSlots, bookSlot, fetchBooking } from "../api/api";
@@ -43,25 +44,24 @@ export default function BookingPageRoute() {
     loadSlots();
   }, [loadSlots]);
 
-  // 🔥 POLLING EVERY 10 SECONDS TO REFRESH SEAT AVAILABILITY
+  // poll every 10s to refresh availability
   useEffect(() => {
     const poll = setInterval(() => {
       loadSlots();
     }, 10000);
-
     return () => clearInterval(poll);
   }, [loadSlots]);
 
-  function onSelectionChange(sel: string[]) {
+  // Clear errors when user interacts and keep callback stable
+  const onSelectionChange = useCallback((sel: string[]) => {
+    setError(null); // clear stale error when user selects seats
     setSelectedSeatIds(sel);
-    setStatusMap((prev) => {
+    setStatusMap(prev => {
       const next = { ...prev };
-      Object.keys(next).forEach((k) => {
-        if (!sel.includes(k)) delete next[k];
-      });
+      Object.keys(next).forEach(k => { if (!sel.includes(k)) delete next[k]; });
       return next;
     });
-  }
+  }, []);
 
   const selectedSeatsInfo = useMemo(() => {
     if (!seats) return [];
@@ -85,8 +85,11 @@ export default function BookingPageRoute() {
 
   async function confirmBooking() {
     if (!id) return;
-    if (selectedSeatIds.length === 0) {
+
+    // Defensive guard: ensure there are selected seats
+    if (!selectedSeatIds || selectedSeatIds.length === 0) {
       setError("Select at least one seat first.");
+      setModalOpen(false);
       return;
     }
 
@@ -94,6 +97,7 @@ export default function BookingPageRoute() {
     setBookingInProgress(true);
     setError(null);
 
+    // mark UI as pending
     setStatusMap((prev) => {
       const next = { ...prev };
       selectedSeatIds.forEach((sid) => (next[sid] = "PENDING"));
@@ -128,6 +132,7 @@ export default function BookingPageRoute() {
 
     const results = await Promise.all(bookingPromises);
 
+    // update seats to mark confirmed as booked
     setSeats((prev) => {
       if (!prev) return prev;
       return prev.map((s) => {
@@ -145,25 +150,24 @@ export default function BookingPageRoute() {
 
     setBookingInProgress(false);
 
+    // clear selected seats that are now confirmed and remove visual highlight
     setSelectedSeatIds((prev) => {
-  const next = prev.filter(
-    (sid) => !results.some((r) => r.slotId === sid && r.status === "CONFIRMED")
-  );
+      const next = prev.filter(
+        (sid) => !results.some((r) => r.slotId === sid && r.status === "CONFIRMED")
+      );
 
-  // Remove visual highlight for seats that became booked
-  const container = document.querySelector(".seat-grid");
-  if (container) {
-    results.forEach((r) => {
-      if (r.status === "CONFIRMED") {
-        const el = container.querySelector(`.seat[data-seat-id="${r.slotId}"]`);
-        if (el) el.classList.remove("seat--selected");
+      const container = document.querySelector(".seat-grid");
+      if (container) {
+        results.forEach((r) => {
+          if (r.status === "CONFIRMED") {
+            const el = container.querySelector(`.seat[data-seat-id="${r.slotId}"]`);
+            if (el) el.classList.remove("seat--selected");
+          }
+        });
       }
+
+      return next;
     });
-  }
-
-  return next;
-});
-
   }
 
   if (!id) return <div>No show id provided</div>;
@@ -180,11 +184,16 @@ export default function BookingPageRoute() {
         <div>Selected: {selectedSeatIds.length}</div>
 
         <button
-          style={{ marginTop: 10 }}
-          disabled={selectedSeatIds.length === 0 || bookingInProgress}
-          onClick={() => setModalOpen(true)}
+          onClick={() => {
+            if (selectedSeatIds.length === 0) {
+              setError("Select at least one seat first.");
+              return;
+            }
+            setModalOpen(true);
+          }}
+          disabled={bookingInProgress}
         >
-          {bookingInProgress ? "Booking..." : "Confirm Booking"}
+          {bookingInProgress ? "Booking..." : "Confirm booking"}
         </button>
 
         {error && <div style={{ color: "red", marginTop: 10 }}>{error}</div>}
@@ -195,6 +204,7 @@ export default function BookingPageRoute() {
         message={`Confirm booking for ${selectedSeatIds.length} seat(s)?`}
         onCancel={() => setModalOpen(false)}
         onConfirm={confirmBooking}
+        confirmDisabled={selectedSeatIds.length === 0 || bookingInProgress}
       />
     </div>
   );

@@ -7,44 +7,25 @@ export default function ConfirmModal({
   message,
   onCancel,
   onConfirm,
+  confirmDisabled = false,
 }: {
   open: boolean;
   title?: string;
   message?: string;
   onCancel: () => void;
   onConfirm: () => void;
+  confirmDisabled?: boolean;
 }) {
   if (!open) return null;
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.4)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 1000,
-      }}
-    >
-      <div
-        style={{
-          background: "white",
-          padding: 20,
-          borderRadius: 8,
-          width: 300,
-        }}
-      >
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 }}>
+      <div style={{ background: "white", padding: 20, borderRadius: 8, width: 360 }}>
         <h3>{title ?? "Confirm"}</h3>
         <p>{message}</p>
-
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
           <button onClick={onCancel}>Cancel</button>
-          <button
-            onClick={onConfirm}
-            style={{ background: "#2563eb", color: "white", padding: "6px 12px", borderRadius: 6 }}
-          >
+          <button onClick={onConfirm} disabled={confirmDisabled} style={{ background: confirmDisabled ? "#9ca3af" : "#2563eb", color: "white", padding: "6px 12px", borderRadius: 6 }}>
             Confirm
           </button>
         </div>

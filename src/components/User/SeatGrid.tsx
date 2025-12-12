@@ -17,7 +17,7 @@ export default function SeatGrid({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  // Handle clicking seats using raw DOM interaction
+  // Click handler using DOM delegation
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -33,38 +33,29 @@ export default function SeatGrid({
       // Ignore seats already booked
       if (seatDiv.classList.contains("booked")) return;
 
-      // Toggle selection by adding/removing CSS class
-      if (seatDiv.classList.contains("seat--selected")) {
-        seatDiv.classList.remove("seat--selected");
-
-        setSelected((prev) => {
-          const next = new Set(prev);
+      setSelected(prev => {
+        const next = new Set(prev);
+        if (seatDiv.classList.contains("seat--selected")) {
+          seatDiv.classList.remove("seat--selected");
           next.delete(seatId);
-          onSelectionChange([...next]);
-          return next;
-        });
-      } else {
-        seatDiv.classList.add("seat--selected");
-
-        setSelected((prev) => {
-          const next = new Set(prev);
+        } else {
+          seatDiv.classList.add("seat--selected");
           next.add(seatId);
-          onSelectionChange([...next]);
-          return next;
-        });
-      }
+        }
+        return next;
+      });
     }
 
     container.addEventListener("click", handleClick);
-
     return () => container.removeEventListener("click", handleClick);
-  }, [onSelectionChange]);
+  }, []);
 
-  // Sync UI when seats update (ex: after booking, new booked seats)
+  // When `seats` changes, remove any selections that are now booked
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
+    // Remove highlight for seats that became booked
     seats.forEach((s) => {
       if (s.isBooked) {
         const el = container.querySelector(`.seat[data-seat-id="${s.id}"]`);
@@ -72,15 +63,19 @@ export default function SeatGrid({
       }
     });
 
-    setSelected((prev) => {
-      const next = new Set([...prev].filter((id) => {
-        const seat = seats.find((s) => s.id === id);
-        return seat && !seat.isBooked;
-      }));
-      onSelectionChange([...next]);
+    // Filter out selected ids that are now booked
+    setSelected(prev => {
+      const next = new Set(
+        [...prev].filter(id => seats.some(s => s.id === id && !s.isBooked))
+      );
       return next;
     });
-  }, [seats, onSelectionChange]);
+  }, [seats]);
+
+  // Notify parent only when `selected` changes (avoids calling parent during render)
+  useEffect(() => {
+    onSelectionChange([...selected]);
+  }, [selected, onSelectionChange]);
 
   return (
     <>

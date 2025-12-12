@@ -1,0 +1,216 @@
+/* ---------------------------------------------------------
+   GLOBAL THEME — Cleaned + Unified
+--------------------------------------------------------- */
+
+:root {
+  --bg: #f6fbfc;
+  --card: #ffffff;
+  --muted: #6b7280;
+  --primary: #0f766e;
+  --accent: #f97316;
+  --shadow: 0 6px 18px rgba(15,118,110,0.08);
+  --radius: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Inter, system-ui, sans-serif;
+  background: linear-gradient(180deg, #eef7f7 0%, var(--bg) 100%);
+  color: #0f172a;
+  margin: 0;
+}
+
+.site-root {
+  min-height: 100vh;
+}
+
+/* ---------------------------------------------------------
+   CONTAINER — FULL WIDTH BUT WITH PADDING
+--------------------------------------------------------- */
+.container {
+  max-width: none;     /* allow full-screen width */
+  width: 100%;
+  padding: 0 28px;     /* clean left/right padding */
+  margin: 0 auto;
+}
+
+/* For content blocks like cards */
+.page-container .card {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ---------------------------------------------------------
+   HEADER
+--------------------------------------------------------- */
+.site-header {
+  background: white;
+  border-bottom: 1px solid #e6eef0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  gap: 12px;
+}
+
+.brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+  background: #eef7f7;
+  padding: 8px;
+}
+
+.brand-title {
+  font-weight: 700;
+}
+
+.brand-sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.nav a {
+  margin-left: 18px;
+  text-decoration: none;
+  color: var(--primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Small screens: hide nav temporarily */
+@media (max-width: 880px) {
+  .nav {
+    display: none;
+  }
+  .brand-title { font-size: 15px; }
+  .brand-sub { font-size: 11px; }
+}
+
+/* ---------------------------------------------------------
+   HERO — small & clean
+--------------------------------------------------------- */
+.hero {
+  padding: 10px 0;               /* reduced padding — removes large blank space */
+  background: linear-gradient(90deg, #f0faf9 0%, #ffffff 100%);
+}
+
+.hero-inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+@media (max-width: 760px) {
+  .hero-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ---------------------------------------------------------
+   BUTTONS
+--------------------------------------------------------- */
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  border: 0;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid #cde6e4;
+  padding: 10px 16px;
+  border-radius: 10px;
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.btn-sm {
+  background: transparent;
+  border: 1px solid #e6eef0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------
+   CARDS
+--------------------------------------------------------- */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.show-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+
+/* Mobile card stacking */
+@media (max-width: 760px) {
+  .show-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .btn-primary,
+  .btn-sm {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ---------------------------------------------------------
+   FOOTER
+--------------------------------------------------------- */
+.site-footer {
+  padding: 18px 0;
+  background: #04323a;
+  color: white;
+  margin-top: 28px;
+}
+
+.site-footer .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
